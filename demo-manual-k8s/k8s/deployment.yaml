@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-demo-deployment
+  labels:
+    app: flask-demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flask-demo
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: flask-demo
+    spec:
+      containers:
+      - name: flask-demo-container
+        image: flask-k8s-demo:v1
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: flask-demo-config # Load all variables from the ConfigMap
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "200m"
+            memory: "128Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 3
+          periodSeconds: 2 # Check every 2 seconds for a fast demo response
+          failureThreshold: 2 # Give up after 2 failures and restart the pod
