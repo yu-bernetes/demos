@@ -1,0 +1,18 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: rabbitmq-scaledobject
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: worker-deployment
+  minReplicaCount: 0
+  maxReplicaCount: 30
+  triggers:
+  - type: rabbitmq
+    metadata:
+      protocol: amqp
+      queueName: task_queue
+      mode: QueueLength
+      value: "50" # 50 mesajda bir yeni pod açar
+      host: amqp://guest:guest@rabbitmq.default.svc.cluster.local:5672/
